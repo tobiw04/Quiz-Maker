@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tobi's Quiz</title>
+</head>
+<body>
+
+<h1 id="myH">Quiz Builder</h1>
+<div id="content">
+    <p id="myText">Enter your questions and answers below</p>
+    <form id="myForm">
+        <label for="question">Question:</label><br>
+        <input type="text" id="question" name="question" required><br><br>
+
+        <label for="ansOne">Answer 1:</label><br>
+        <input type="text" id="ansOne" name="ansOne" required>
+        <input type="checkbox" id="checkOne" name="checkOne"><br>
+
+        <label for="ansTwo">Answer 2:</label><br>
+        <input type="text" id="ansTwo" name="ansTwo" required>
+        <input type="checkbox" id="checkTwo" name="checkTwo"><br>
+        
+        <label for="ansThree">Answer 3:</label><br>
+        <input type="text" id="ansThree" name="ansThree" required>
+        <input type="checkbox" id="checkThree" name="checkThree"><br>
+
+        <label for="ansFour">Answer 4:</label><br>
+        <input type="text" id="ansFour" name="ansFour" required>
+        <input type="checkbox" id="checkFour" name="checkFour"><br><br>
+
+        <input type="submit" value="Add Question">
+        <button type="button" id="startQuiz">Start Quiz</button>
+    </form>
+</div>
+
+<script>
+let quiz = []; // store all submitted questions
+let currentQ = 0;
+let score = 0;
+
+const myForm = document.getElementById('myForm');
+const content = document.getElementById('content');
+
+myForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    // Read question and answers
+    const question = document.getElementById('question').value;
+    const answers = [
+        { text: document.getElementById('ansOne').value, correct: document.getElementById('checkOne').checked },
+        { text: document.getElementById('ansTwo').value, correct: document.getElementById('checkTwo').checked },
+        { text: document.getElementById('ansThree').value, correct: document.getElementById('checkThree').checked },
+        { text: document.getElementById('ansFour').value, correct: document.getElementById('checkFour').checked },
+    ];
+
+    quiz.push({ question, answers });
+
+    // Clear form for next question
+    myForm.reset();
+    alert("Question added! You can add another one or start the quiz.");
+});
+
+document.getElementById('startQuiz').addEventListener('click', function() {
+    if (quiz.length === 0) {
+        alert("Please add at least one question first!");
+        return;
+    }
+    currentQ = 0; // index
+    showQuestion(currentQ);
+});
+
+function showQuestion(index) {
+    content.innerHTML = ""; // clear previous content
+
+    const qObj = quiz[index];
+    const qText = document.createElement("p");
+    qText.textContent = qObj.question;
+    content.appendChild(qText);
+
+    const ansForm = document.createElement("form");
+    ansForm.id = "ansForm";
+
+    qObj.answers.forEach((ans, i) => {
+        const label = document.createElement("label");
+        label.textContent = ans.text;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "quizAnswer";
+        checkbox.value = i;
+
+        ansForm.appendChild(checkbox);
+        ansForm.appendChild(label);
+        ansForm.appendChild(document.createElement("br"));
+    });
+
+    const submit = document.createElement("input");
+    submit.type = "submit";
+    submit.value = "Check Answer";
+    ansForm.appendChild(submit);
+
+    content.appendChild(ansForm);
+
+    ansForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const selected = [];
+        const checkboxes = ansForm.querySelectorAll('input[type="checkbox"]');
+        const labels = ansForm.querySelectorAll('label');
+
+        let correct = true;
+
+        checkboxes.forEach((box, index) => {
+            if (box.checked) selected.push(index);
+            if (qObj.answers[index].correct) {
+                labels[index].style.color = "green";
+            } else if (box.checked) {
+                labels[index].style.color = "red";
+                correct = false;
+            }
+            if (!qObj.answers[index].correct && !box.checked) {
+                // wrong answer not selected => correct
+            }
+            if (qObj.answers[index].correct && !box.checked) {
+                correct = false;
+            }
+
+        });
+
+        if (correct) score++;
+
+        // After 1 second, go to next question
+        setTimeout(() => {
+            currentQ++;
+            if (currentQ < quiz.length) {
+                showQuestion(currentQ);
+            } else {
+                content.innerHTML = "<h2>Quiz Finished! Your score: " + score + " / " + quiz.length + "</h2>";
+            }
+        }, 1500);
+    });
+}
+</script>
+
+</body>
+</html>
